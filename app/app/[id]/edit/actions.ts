@@ -3,15 +3,16 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { categories, statuses } from "../place-fields";
+import { categories, statuses } from "../../place-fields";
 
-export async function createPlace(formData: FormData) {
+export async function updatePlace(formData: FormData) {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
     throw new Error("Supabase is not configured.");
   }
 
+  const id = String(formData.get("id") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
   const country = String(formData.get("country") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
@@ -20,6 +21,7 @@ export async function createPlace(formData: FormData) {
   const favorite = formData.get("favorite") === "on";
 
   if (
+    !id ||
     !name ||
     !statuses.includes(status as (typeof statuses)[number]) ||
     !categories.includes(category as (typeof categories)[number])
@@ -27,14 +29,17 @@ export async function createPlace(formData: FormData) {
     throw new Error("Invalid place.");
   }
 
-  const { error } = await supabase.from("places").insert({
-    name,
-    country,
-    notes,
-    status,
-    category,
-    favorite,
-  });
+  const { error } = await supabase
+    .from("places")
+    .update({
+      name,
+      country,
+      notes,
+      status,
+      category,
+      favorite,
+    })
+    .eq("id", id);
 
   if (error) {
     throw new Error(error.message);

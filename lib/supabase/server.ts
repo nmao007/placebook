@@ -23,9 +23,7 @@ export async function createSupabaseServerClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch {
-            // Server Components can read auth cookies but cannot set response cookies.
-          }
+          } catch {}
         },
       },
     },
